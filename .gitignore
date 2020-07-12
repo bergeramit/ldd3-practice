@@ -1,1 +1,7 @@
 .vscode/settings.json
+*.mod*
+*.o*
+*.ko*
+*.ko
+*.symvers
+*.order
