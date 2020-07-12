@@ -1,11 +1,14 @@
-#include "char_fops.h"
+#include <linux/module.h>
+#include <linux/fs.h>
 
-ssize_t example_write(struct file *, const char __user *, size_t, loff_t *) {
+#include "char_driver_fops.h"
+
+ssize_t example_write(struct file *a, const char __user *b, size_t c, loff_t *d) {
         printk(KERN_ALERT "write syscall called\n");
         return 0;
 }
 
-ssize_t example_read(struct file *, char __user *, size_t, loff_t *) {
+ssize_t example_read(struct file *a, char __user *b, size_t c, loff_t *d) {
         printk(KERN_ALERT "read syscall called\n");
         return 0;
 }

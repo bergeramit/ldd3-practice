@@ -3,7 +3,7 @@
 #include <linux/fs.h>
 #include <linux/kdev_t.h>
 
-#include "char_fops.h"
+#include "char_driver_fops.h"
 
 MODULE_LICENSE("Dual BSD/GPL");
 
