@@ -1,38 +1,27 @@
-#include <linux/init.h>
 #include <linux/module.h>
-#include <linux/moduleparam.h>
-
-static char *magic_string = "default magic";
-static int input_array_size = 10;
-static int numbers[10] = {0};
+#include <linux/fs.h>
+#include <linux/kdev_t.h>
 
 MODULE_LICENSE("Dual BSD/GPL - can be anything");
 
-/*
- * S_IRUGO - read by all and not changeable
- * use `modinfo module.ko` to get the information about the module
- *
- * input_array_size - will change if the number or arguments in the cmd line is shorted
- */
-module_param(magic_string, charp, S_IRUGO);
-module_param_array(numbers, int, &input_array_size, S_IRUGO);
+static char DEVICE_NAME[] = "char_device";
+static int number_of_devices = 1;
+static dev_t device_identifier;
 
+static int __init char_device_init(void) {
+    int major, minor;
+	alloc_chrdev_region(&device_identifier, 0, number_of_devices, DEVICE_NAME);
+	major = MAJOR(device_identifier);
+	minor = MINOR(device_identifier);
 
-static int param_init(void) {
-    int i = 0;
-    printk(KERN_ALERT "The magic string: %s\n", magic_string);
-    printk(KERN_ALERT "The numbers you entered:\n");
-    for (i = 0; i < input_array_size; i++) {
-        printk(KERN_ALERT "%d", numbers[i]);
-    }
-    printk(KERN_ALERT "\n");
+    printk(KERN_ALERT "major: %d, minor: %d\n", major, minor);
     return 0;
 }
 
-static void hello_exit(void) {
+static void __exit char_device_exit(void) {
     printk(KERN_ALERT "Bye!!\n");
 }
 
 
-module_init(param_init);
-module_exit(hello_exit);
+module_init(char_device_init);
+module_exit(char_device_exit);
