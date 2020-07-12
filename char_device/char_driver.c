@@ -3,6 +3,8 @@
 #include <linux/fs.h>
 #include <linux/kdev_t.h>
 
+#include "char_fops.h"
+
 MODULE_LICENSE("Dual BSD/GPL");
 
 #define CHAR_DRIVER__MAJOR_DEFAULT (0)
@@ -14,6 +16,12 @@ static dev_t device_identifier = -1;
 static int char_driver__major = CHAR_DRIVER__MAJOR_DEFAULT;
 static int char_driver__first_minor = CHAR_DRIVER__FIRST_MINOR_DEFAULT;
 
+struct file_operations example_fops = {
+    .owner = THIS_MODULE,
+    .read = example_read,
+    .write = example_write,
+    .unlocked_ioctl = example_ioctl,
+};
 
 module_param(char_driver__major, int, S_IRUGO);
 module_param(char_driver__first_minor, int, S_IRUGO);
@@ -78,3 +86,4 @@ static void __exit char_device_exit(void) {
 
 module_init(char_device_init);
 module_exit(char_device_exit);
+
