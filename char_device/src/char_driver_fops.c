@@ -13,6 +13,16 @@ ssize_t example_read(struct file *a, char __user *b, size_t c, loff_t *d) {
         return 0;
 }
 
+int example_open(struct inode *a, struct file *b) {
+        printk(KERN_ALERT "open syscall called\n");
+        return 0;
+}
+
+int example_release(struct inode *a, struct file *b) {
+        printk(KERN_ALERT "release syscall called\n");
+        return 0;
+}
+
 long example_ioctl(struct file *f, unsigned int cmd, unsigned long arg) {
         printk(KERN_ALERT "ioctl syscall called\n");
         return 0;

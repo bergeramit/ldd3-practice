@@ -22,6 +22,8 @@ struct file_operations example_fops = {
     .owner = THIS_MODULE,
     .read = example_read,
     .write = example_write,
+    .open = example_open,
+    .release = example_release,
     .unlocked_ioctl = example_ioctl,
 };
 
@@ -31,11 +33,11 @@ static dev_t region_identifier;
 module_param(char_driver__major, int, S_IRUGO);
 module_param(char_driver__first_minor, int, S_IRUGO);
 
-int setup_cdev(dev_t device_identifier) {
+int setup_cdev(void) {
     int rc = -1;
     /*
      * This cdev - charecter device is the structure responsible
-     * for a specific charecter device i.e dev_t (a single major and minor)
+     * for a specific charecter device i.e dev_t (a single major and minor == one file in /dev)
      */ 
     my_cdev = cdev_alloc();
     my_cdev->ops = &example_fops;
@@ -44,12 +46,12 @@ int setup_cdev(dev_t device_identifier) {
     /*
      * Making sure the kernel knows which cdev is responsible to handle the charecter device
      */
-    rc = cdev_add(my_cdev, device_identifier, 1);
+    rc = cdev_add(my_cdev, region_identifier, 1);
 
     return rc;
 }
 
-void print_device_numbers(dev_t device_identifier) {
+void print_device_numbers(void) {
 
     /*
      * The major number identifies the driver assossiated
@@ -57,12 +59,12 @@ void print_device_numbers(dev_t device_identifier) {
      * for example: /dev/zero and /dev/null are both managed by driver number 1
      *              their major is 1
      */ 
-	char_driver__major = MAJOR(device_identifier);
+	char_driver__major = MAJOR(region_identifier);
 
     /*
      * The minor number tells the kernel exactly which device is being referred to
      */
-	char_driver__first_minor = MINOR(device_identifier);
+	char_driver__first_minor = MINOR(region_identifier);
 
     printk(KERN_ALERT "major: %d, first minor: %d\n", char_driver__major, char_driver__first_minor);
 }
@@ -102,7 +104,6 @@ Exit:
 
 static int __init char_device_init(void) {
     int rc = 0;
-    dev_t first_device_id = -1;
 
     rc = allocate_device_region();
     if (0 != rc) {
@@ -110,8 +111,8 @@ static int __init char_device_init(void) {
         goto Exit;
     }
 
-    (void)print_device_numbers(first_device_id);
-    rc = setup_cdev(first_device_id);
+    (void)print_device_numbers();
+    rc = setup_cdev();
 
     if (rc) {
         printk(KERN_ALERT "Could not add char device\n");
