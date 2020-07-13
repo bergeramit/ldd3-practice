@@ -2,6 +2,7 @@
 #include <linux/moduleparam.h>
 #include <linux/fs.h>
 #include <linux/kdev_t.h>
+#include <linux/cdev.h>
 
 #include "char_driver_fops.h"
 
@@ -9,11 +10,13 @@ MODULE_LICENSE("Dual BSD/GPL");
 
 #define CHAR_DRIVER__MAJOR_DEFAULT (0)
 #define CHAR_DRIVER__FIRST_MINOR_DEFAULT (0)
+#define PRINT_ERROR(err) printk(KERN_NOTICE "Error code: %d\n", err)
 
 static char DEVICE_NAME[] = "char_device";
 static int number_of_devices = 3;
 static int char_driver__major = CHAR_DRIVER__MAJOR_DEFAULT;
 static int char_driver__first_minor = CHAR_DRIVER__FIRST_MINOR_DEFAULT;
+static bool is_device_alive = false;
 
 struct file_operations example_fops = {
     .owner = THIS_MODULE,
@@ -23,22 +26,23 @@ struct file_operations example_fops = {
 };
 
 struct cdev *my_cdev = NULL;
+static dev_t region_identifier;
 
 module_param(char_driver__major, int, S_IRUGO);
 module_param(char_driver__first_minor, int, S_IRUGO);
 
 int setup_cdev(dev_t device_identifier) {
-
+    int rc = -1;
     /*
      * This cdev - charecter device is the structure responsible
      * for a specific charecter device i.e dev_t (a single major and minor)
      */ 
     my_cdev = cdev_alloc();
     my_cdev->ops = &example_fops;
-    my_cdev.owner = THIS_MODULE;
+    my_cdev->owner = THIS_MODULE;
 
     /*
-     * Making sure the kernel knows which cdev is reponsible to handle the charecter device
+     * Making sure the kernel knows which cdev is responsible to handle the charecter device
      */
     rc = cdev_add(my_cdev, device_identifier, 1);
 
@@ -63,12 +67,13 @@ void print_device_numbers(dev_t device_identifier) {
     printk(KERN_ALERT "major: %d, first minor: %d\n", char_driver__major, char_driver__first_minor);
 }
 
-int allocate_device_region(dev_t *first_device_id_out) {
+int allocate_device_region(void) {
     int rc = -1;
+    dev_t identifier;
     if (char_driver__major) {
 
-        *first_device_id_out = MKDEV(char_driver__major, 0);
-        rc = register_chrdev_region(*first_device_id_out, number_of_devices, DEVICE_NAME);
+        identifier = MKDEV(char_driver__major, 0);
+        rc = register_chrdev_region(identifier, number_of_devices, DEVICE_NAME);
     } else {
 
         /*
@@ -80,9 +85,18 @@ int allocate_device_region(dev_t *first_device_id_out) {
         * DEVICE_NAME - the name of the device (will appear in /proc/devices and will be assossiated with
         *               the major number)
         */
-        rc = alloc_chrdev_region(first_device_id_out, 0, number_of_devices, DEVICE_NAME);
+        rc = alloc_chrdev_region(&identifier, 0, number_of_devices, DEVICE_NAME);
     }
 
+    if (0 != rc) {
+        printk(KERN_ALERT "Could Not Alloc char dev region with major: %d\n", char_driver__major);
+        PRINT_ERROR(rc);
+        goto Exit;
+    }
+
+    region_identifier = identifier;
+
+Exit:
     return rc;
 }
 
@@ -90,36 +104,45 @@ static int __init char_device_init(void) {
     int rc = 0;
     dev_t first_device_id = -1;
 
-    rc = allocate_device_region(&first_device_id);
+    rc = allocate_device_region();
     if (0 != rc) {
-        printk(KERN_ALERT "Could Not Alloc char dev region with major: %d\n", char_driver__major);
-        printk(KERN_NOTICE "Error code: %d", rc);
-        *first_device_id_out = -1;
+        printk(KERN_ALERT "Could not allocate chardev region\n");
+        goto Exit;
     }
 
     (void)print_device_numbers(first_device_id);
     rc = setup_cdev(first_device_id);
 
     if (rc) {
-        printk(KERN_ALERT "Could not add char device", char_driver__major);
-        printk(KERN_NOTICE "Error code: %d", rc);
+        printk(KERN_ALERT "Could not add char device\n");
+        PRINT_ERROR(rc);
+        goto Cleanup;
     }
 
+    printk(KERN_ALERT "Device Ready to use!\n");
+    is_device_alive = true;
+    goto Exit;
+
+Cleanup:
+    unregister_chrdev_region(region_identifier, number_of_devices);
+    printk(KERN_ALERT "Freed the device numbers\n");
+
+Exit:
     return rc;
 }
 
 static void __exit char_device_exit(void) {
-    if (-1 != device_identifier) {
+    if (is_device_alive) {
 
         /*
          * This function unregisters the number assossiated with this driver/ module
          */
-        unregister_chrdev_region(device_identifier, number_of_devices);
-        printk(KERN_ALERT "Freed the device numbers\n");
+        unregister_chrdev_region(region_identifier, number_of_devices);
+        cdev_del(my_cdev);
+        printk(KERN_ALERT "Freed the device region and device\n");
+        is_device_alive = false;
     }
 }
 
-
 module_init(char_device_init);
 module_exit(char_device_exit);
-
