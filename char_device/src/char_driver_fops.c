@@ -3,6 +3,15 @@
 
 #include "char_driver_fops.h"
 
+struct file_operations example_fops = {
+    .owner = THIS_MODULE,
+    .read = example_read,
+    .write = example_write,
+    .open = example_open,
+    .release = example_release,
+    .unlocked_ioctl = example_ioctl,
+};
+
 ssize_t example_write(struct file *a, const char __user *b, size_t c, loff_t *d) {
         printk(KERN_ALERT "write syscall called\n");
         return 0;

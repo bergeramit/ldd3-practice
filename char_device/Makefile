@@ -1,5 +1,5 @@
 obj-m += char_driver.o
-char_driver-objs := ./src/char_driver_fops.o ./src/char_driver.o
+char_driver-objs := ./src/char_driver_fops.o ./src/char_driver.o ./src/device_manager.o
 
 module = char_device
 device = driver_dev_name
