@@ -6,9 +6,9 @@
 #include "device_manager.h"
 #include "char_driver.h"
 
-static char DRIVER_NAME[] = "char_device";
+static __initdata char DRIVER_NAME[] = "char_device";
 
-int setup_cdev(struct cdev **my_cdev,
+int __init setup_cdev(struct cdev **my_cdev,
                struct file_operations *fops,
                dev_t char_device_identifier)
 {
@@ -31,15 +31,15 @@ int setup_cdev(struct cdev **my_cdev,
     return rc;
 }
 
-int setup_device_region(dev_t *region_identifier_out,
+int __init setup_device_region(dev_t *region_identifier_out,
                         int first_minor,
                         int number_of_devices)
 {
     int rc = -1;
     dev_t identifier;
-    if (char_driver__major) {
+    if (CHAR_DRIVER__major) {
 
-        identifier = MKDEV(char_driver__major, first_minor);
+        identifier = MKDEV(CHAR_DRIVER__major, first_minor);
         rc = register_chrdev_region(identifier, number_of_devices, DRIVER_NAME);
     } else {
 
@@ -56,7 +56,7 @@ int setup_device_region(dev_t *region_identifier_out,
     }
 
     if (0 != rc) {
-        printk(KERN_ALERT "Could Not Alloc char dev region with major: %d\n", char_driver__major);
+        printk(KERN_ALERT "Could Not Alloc char driver region with major: %d\n", CHAR_DRIVER__major);
         PRINT_ERROR(rc);
         goto Exit;
     }
