@@ -23,6 +23,14 @@ ssize_t example_read(struct file *a, char __user *b, size_t c, loff_t *d) {
         return 0;
 }
 
+/*
+ * inode - the way the kernel represent files in the system,
+ * if the fie is a special device file than this struct will
+ * have the cdev struct (inode->i_cdev)
+ * 
+ * filp - file pointer this struct represent open files in the system
+ * 
+ */
 int example_open(struct inode *inode, struct file *filp) {
         CHAR_DRIVER__example_cdev_t *dev = NULL;
         printk(KERN_ALERT "open syscall called\n");
@@ -33,6 +41,7 @@ int example_open(struct inode *inode, struct file *filp) {
          * struct that contains this cdev and the field name in that struct 
          * (which in this case is just cdev)
          * Example use here: dev = container_of(inode->i_cdev, CHAR_DRIVER__example_cdev_t, cdev);
+         * 
          */ 
 
         /*
@@ -40,12 +49,14 @@ int example_open(struct inode *inode, struct file *filp) {
          * for that inode
          */
         if (MINOR(inode->i_rdev) == MINOR(my_cdev.cdev.dev)) {
+                printk(KERN_ALERT "Init Successful (found cdev with minor number)\n");
+
+                /* 
+                * We will save it for easy access
+                */ 
                 filp->private_data = &my_cdev;
         }
-        /* 
-         * We will save it for easy access
-         */ 
-        filp->private_data = dev;
+
         return 0;
 }
 
