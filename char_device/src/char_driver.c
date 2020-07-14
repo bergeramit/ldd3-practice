@@ -18,8 +18,9 @@ int CHAR_DRIVER__major = CHAR_DRIVER__MAJOR_DEFAULT;
 static int char_driver__number_of_devices = 3;
 static int char_driver__first_minor = CHAR_DRIVER__FIRST_MINOR_DEFAULT;
 static bool char_driver__is_driver_alive = false;
-struct cdev *char_driver__first_cdev = NULL;
+CHAR_DRIVER__example_cdev_t my_cdev = {0};
 static dev_t char_driver__region_identifier;
+
 
 module_param(CHAR_DRIVER__major, int, S_IRUGO);
 module_param(char_driver__first_minor, int, S_IRUGO);
@@ -57,7 +58,7 @@ static int __init char_device_init(void) {
     (void)print_device_numbers();
     first_char_device = char_driver__region_identifier + char_driver__first_minor;
 
-    rc = setup_cdev(&char_driver__first_cdev,
+    rc = setup_cdev(&my_cdev,
                     &example_fops,
                     first_char_device);
 
@@ -88,7 +89,7 @@ static void __exit char_device_exit(void) {
          */
         unregister_chrdev_region(char_driver__region_identifier,
                                  char_driver__number_of_devices);
-        cdev_del(char_driver__first_cdev);
+        cdev_del(&(my_cdev.cdev));
         printk(KERN_ALERT "Freed the device region and device\n");
         char_driver__is_driver_alive = false;
     }
