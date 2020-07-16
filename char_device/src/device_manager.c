@@ -4,6 +4,7 @@
 #include <linux/kdev_t.h>
 
 #include "device_manager.h"
+#include "device_print.h"
 
 static __initdata char DRIVER_NAME[] = "char_device";
 
@@ -62,7 +63,7 @@ int __init setup_device_region(dev_t *region_identifier_out,
 
     if (0 != rc) {
         printk(KERN_ALERT "Could Not Alloc char driver region with major: %d\n", CHAR_DRIVER__major);
-        PRINT_ERROR(rc);
+        PRINT_ERROR_CODE(rc);
         goto Exit;
     }
 

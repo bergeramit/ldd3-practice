@@ -7,6 +7,7 @@
 #include "char_driver.h"
 #include "char_driver_fops.h"
 #include "device_manager.h"
+#include "device_print.h"
 
 MODULE_LICENSE("Dual BSD/GPL");
 
@@ -14,13 +15,12 @@ MODULE_LICENSE("Dual BSD/GPL");
 #define CHAR_DRIVER__FIRST_MINOR_DEFAULT (0)
 
 int CHAR_DRIVER__major = CHAR_DRIVER__MAJOR_DEFAULT;
+CHAR_DRIVER__example_cdev_t my_cdev = {0};
 
 static int char_driver__number_of_devices = 3;
 static int char_driver__first_minor = CHAR_DRIVER__FIRST_MINOR_DEFAULT;
 static bool char_driver__is_driver_alive = false;
-CHAR_DRIVER__example_cdev_t my_cdev = {0};
 static dev_t char_driver__region_identifier;
-
 
 module_param(CHAR_DRIVER__major, int, S_IRUGO);
 module_param(char_driver__first_minor, int, S_IRUGO);
@@ -40,7 +40,7 @@ void print_device_numbers(void) {
      */
 	char_driver__first_minor = MINOR(char_driver__region_identifier);
 
-    printk(KERN_ALERT "major: %d, first minor: %d\n", CHAR_DRIVER__major, char_driver__first_minor);
+    PRINT_DEBUG("major: %d, first minor: %d\n", CHAR_DRIVER__major, char_driver__first_minor);
 }
 
 static int __init char_device_init(void) {
@@ -52,6 +52,7 @@ static int __init char_device_init(void) {
                              char_driver__number_of_devices);
     if (0 != rc) {
         printk(KERN_ALERT "Could not allocate chardev region\n");
+        PRINT_ERROR_CODE(rc);
         goto Exit;
     }
 
@@ -64,18 +65,18 @@ static int __init char_device_init(void) {
 
     if (rc) {
         printk(KERN_ALERT "Could not add char device\n");
-        PRINT_ERROR(rc);
+        PRINT_ERROR_CODE(rc);
         goto Cleanup;
     }
 
-    printk(KERN_ALERT "Device Ready to use!\n");
+    PRINT_DEBUG("Device Ready to use!\n");
     char_driver__is_driver_alive = true;
     goto Exit;
 
 Cleanup:
     unregister_chrdev_region(char_driver__region_identifier,
                              char_driver__number_of_devices);
-    printk(KERN_ALERT "Freed the device numbers\n");
+    PRINT_DEBUG("Freed the device numbers\n");
 
 Exit:
     return rc;
@@ -90,7 +91,7 @@ static void __exit char_device_exit(void) {
         unregister_chrdev_region(char_driver__region_identifier,
                                  char_driver__number_of_devices);
         cdev_del(&(my_cdev.cdev));
-        printk(KERN_ALERT "Freed the device region and device\n");
+        PRINT_DEBUG("Freed the device region and device\n");
         char_driver__is_driver_alive = false;
     }
 }

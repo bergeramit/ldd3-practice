@@ -1,5 +1,17 @@
+# Comment this line to disable debug prints
+DEBUG = y
+
 obj-m += char_driver.o
 char_driver-objs := ./src/char_driver_fops.o ./src/char_driver.o ./src/device_manager.o
+
+ifeq ($(DEBUG), y)
+	
+	#
+	# if we want specific flags for a specific object file
+	# CFLAGS_char_driver.o := -DDEBUG -g
+	#
+	ccflags-y += -g -DDEBUG
+endif
 
 module = char_device
 device = driver_dev_name
@@ -24,3 +36,6 @@ register:
 remove:
 	sudo rmmod char_driver.ko
 	sudo rm -fr /dev/$(device)[0-2]
+
+purge: remove clean
+

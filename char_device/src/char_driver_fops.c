@@ -3,6 +3,7 @@
 #include <linux/kernel.h>
 
 #include "char_driver_fops.h"
+#include "device_print.h"
 
 struct file_operations example_fops = {
     .owner = THIS_MODULE,
@@ -14,12 +15,12 @@ struct file_operations example_fops = {
 };
 
 ssize_t example_write(struct file *a, const char __user *b, size_t c, loff_t *d) {
-        printk(KERN_ALERT "write syscall called\n");
+        PRINT_DEBUG("write syscall called\n");
         return 0;
 }
 
 ssize_t example_read(struct file *a, char __user *b, size_t c, loff_t *d) {
-        printk(KERN_ALERT "read syscall called\n");
+        PRINT_DEBUG("read syscall called\n");
         return 0;
 }
 
@@ -32,8 +33,7 @@ ssize_t example_read(struct file *a, char __user *b, size_t c, loff_t *d) {
  * 
  */
 int example_open(struct inode *inode, struct file *filp) {
-        CHAR_DRIVER__example_cdev_t *dev = NULL;
-        printk(KERN_ALERT "open syscall called\n");
+        PRINT_DEBUG("open syscall called\n");
         
         /*
          * container_of function finds the struct that contains the same cdev
@@ -48,8 +48,8 @@ int example_open(struct inode *inode, struct file *filp) {
          * This technique uses the minor number to detect which cdev struct is responsible
          * for that inode
          */
-        if (MINOR(inode->i_rdev) == MINOR(my_cdev.cdev.dev)) {
-                printk(KERN_ALERT "Init Successful (found cdev with minor number)\n");
+        if (iminor(inode) == MINOR(my_cdev.cdev.dev)) {
+                PRINT_DEBUG("Init Successful (found cdev with minor number)\n");
 
                 /* 
                 * We will save it for easy access
@@ -60,12 +60,21 @@ int example_open(struct inode *inode, struct file *filp) {
         return 0;
 }
 
-int example_release(struct inode *a, struct file *b) {
-        printk(KERN_ALERT "release syscall called\n");
+/*
+ * The release method is called only when the refrence counter
+ * for that inode reaches 0 - which means that when a process
+ * forks and the open fd's are copied it will only update the inode
+ * counter to 2 instead. This way when the child is dead and the
+ * counter updates to 1 release will not be called even though 
+ * there will be a call to "close" only the kernel will handle it
+ * for us
+ */
+int example_release(struct inode *inode, struct file *filp) {
+        PRINT_DEBUG("release syscall called\n");
         return 0;
 }
 
 long example_ioctl(struct file *f, unsigned int cmd, unsigned long arg) {
-        printk(KERN_ALERT "ioctl syscall called\n");
+        PRINT_DEBUG("ioctl syscall called\n");
         return 0;
 }

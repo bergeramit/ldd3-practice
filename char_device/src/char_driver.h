@@ -5,7 +5,7 @@
 
 extern struct file_operations example_fops;
 
-#define PRINT_ERROR(err) printk(KERN_NOTICE "Error code: %d\n", err)
+#define PRINT_ERROR_CODE(err) printk(KERN_ERR "Error code: %d\n", err)
 
 typedef struct CHAR_DRIVER__example_cdev {
     struct cdev cdev;
