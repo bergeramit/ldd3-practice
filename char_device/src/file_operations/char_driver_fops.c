@@ -3,7 +3,7 @@
 #include <linux/kernel.h>
 
 #include "char_driver_fops.h"
-#include "../logger/logger_print.h"
+#include "../logger/logger.h"
 
 struct file_operations example_fops = {
     .owner = THIS_MODULE,
@@ -15,12 +15,12 @@ struct file_operations example_fops = {
 };
 
 ssize_t example_write(struct file *a, const char __user *b, size_t c, loff_t *d) {
-        PRINT_DEBUG("write syscall called\n");
+        LOGGER__LOG_DEBUG("write syscall called\n");
         return 0;
 }
 
 ssize_t example_read(struct file *a, char __user *b, size_t c, loff_t *d) {
-        PRINT_DEBUG("read syscall called\n");
+        LOGGER__LOG_DEBUG("read syscall called\n");
         return 0;
 }
 
@@ -33,7 +33,7 @@ ssize_t example_read(struct file *a, char __user *b, size_t c, loff_t *d) {
  * 
  */
 int example_open(struct inode *inode, struct file *filp) {
-        PRINT_DEBUG("open syscall called\n");
+        LOGGER__LOG_DEBUG("open syscall called\n");
         
         /*
          * container_of function finds the struct that contains the same cdev
@@ -49,7 +49,7 @@ int example_open(struct inode *inode, struct file *filp) {
          * for that inode
          */
         if (iminor(inode) == MINOR(my_cdev.cdev.dev)) {
-                PRINT_DEBUG("Init Successful (found cdev for the special file)\n");
+                LOGGER__LOG_DEBUG("Init Successful (found cdev for the special file)\n");
 
                 /* 
                 * We will save it for easy access
@@ -70,11 +70,11 @@ int example_open(struct inode *inode, struct file *filp) {
  * for us
  */
 int example_release(struct inode *inode, struct file *filp) {
-        PRINT_DEBUG("release syscall called\n");
+        LOGGER__LOG_DEBUG("release syscall called\n");
         return 0;
 }
 
 long example_ioctl(struct file *f, unsigned int cmd, unsigned long arg) {
-        PRINT_DEBUG("ioctl syscall called\n");
+        LOGGER__LOG_DEBUG("ioctl syscall called\n");
         return 0;
 }

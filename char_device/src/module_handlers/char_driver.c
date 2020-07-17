@@ -7,7 +7,7 @@
 #include "char_driver.h"
 #include "../file_operations/char_driver_fops.h"
 #include "../device_manager/device_manager.h"
-#include "../logger/logger_print.h"
+#include "../logger/logger.h"
 
 MODULE_LICENSE("Dual BSD/GPL");
 
@@ -22,21 +22,25 @@ static dev_t char_driver__region_identifier;
 module_param(CHAR_DRIVER__major, int, S_IRUGO);
 module_param(char_driver__first_minor, int, S_IRUGO);
 
-static int __init char_driver_init(void) {
+static int __init char_driver__init(void) {
     int rc = 0;
     dev_t first_char_device = 0;
 
-    rc = setup_device_region(&char_driver__region_identifier,
-                             char_driver__first_minor,
-                             char_driver__number_of_devices);
+    rc = DEVICE_MANAGER__setup_device_region(
+            &char_driver__region_identifier,
+            char_driver__first_minor,
+            char_driver__number_of_devices
+         );
+
     if (0 != rc) {
-        printk(KERN_ALERT "Could not allocate chardev region\n");
-        PRINT_ERROR_CODE(rc);
+        LOGGER__log_error(rc, "Could not allocate chardev region\n");
         goto Exit;
     }
 
-    (void)print_device_numbers(char_driver__region_identifier,
-                               char_driver__number_of_devices);
+    LOGGER__log_device_numbers(
+        char_driver__region_identifier,
+        char_driver__number_of_devices
+    );
 
      /*
      * The major number identifies the driver assossiated
@@ -55,42 +59,48 @@ static int __init char_driver_init(void) {
      * Registering the first device only
      */ 
     first_char_device = char_driver__region_identifier + char_driver__first_minor;
-    rc = setup_cdev(&my_cdev,
-                    &example_fops,
-                    first_char_device);
+    rc = DEVICE_MANAGER__setup_cdev(
+            &my_cdev,
+            &example_fops,
+            first_char_device
+         );
 
     if (rc) {
-        printk(KERN_ALERT "Could not add char device\n");
-        PRINT_ERROR_CODE(rc);
+        LOGGER__log_error(rc, "Could not add char device\n");
         goto Cleanup;
     }
 
-    PRINT_DEBUG("Device Ready to use!\n");
+    LOGGER__LOG_DEBUG("Device Ready to use!\n");
     char_driver__is_driver_alive = true;
     goto Exit;
 
 Cleanup:
-    unregister_chrdev_region(char_driver__region_identifier,
-                             char_driver__number_of_devices);
-    PRINT_DEBUG("Freed the device numbers\n");
+    unregister_chrdev_region(
+        char_driver__region_identifier,
+        char_driver__number_of_devices
+    );
+    LOGGER__LOG_DEBUG("Freed the device numbers\n");
 
 Exit:
     return rc;
 }
 
-static void __exit char_driver_exit(void) {
+static void __exit char_driver__exit(void) {
     if (char_driver__is_driver_alive) {
 
         /*
          * This function unregisters the number assossiated with this driver/ module
          */
-        unregister_chrdev_region(char_driver__region_identifier,
-                                 char_driver__number_of_devices);
+        unregister_chrdev_region(
+            char_driver__region_identifier,
+            char_driver__number_of_devices
+        );
+
         cdev_del(&(my_cdev.cdev));
-        PRINT_DEBUG("Freed the device region and device\n");
+        LOGGER__LOG_DEBUG("Freed the device region and device\n");
         char_driver__is_driver_alive = false;
     }
 }
 
-module_init(char_driver_init);
-module_exit(char_driver_exit);
+module_init(char_driver__init);
+module_exit(char_driver__exit);

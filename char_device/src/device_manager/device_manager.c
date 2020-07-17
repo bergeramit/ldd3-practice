@@ -4,14 +4,15 @@
 #include <linux/kdev_t.h>
 
 #include "device_manager.h"
-#include "../logger/logger_print.h"
+#include "../logger/logger.h"
 
 static __initdata char DRIVER_NAME[] = "char_device";
 
-int __init setup_cdev(struct CHAR_DRIVER__example_cdev *my_cdev,
-                      struct file_operations *fops,
-                      dev_t char_device_identifier)
-{
+int __init DEVICE_MANAGER__setup_cdev(
+    struct CHAR_DRIVER__example_cdev *my_cdev,
+    struct file_operations *fops,
+    dev_t char_device_identifier
+){
     int rc = -1;
     /*
      * This cdev - charecter device is the structure responsible
@@ -37,10 +38,11 @@ int __init setup_cdev(struct CHAR_DRIVER__example_cdev *my_cdev,
     return rc;
 }
 
-int __init setup_device_region(dev_t *region_identifier_out,
-                               int first_minor,
-                               int number_of_devices)
-{
+int __init DEVICE_MANAGER__setup_device_region(
+    dev_t *region_identifier_out,
+    int first_minor,
+    int number_of_devices
+){
     int rc = -1;
     dev_t identifier;
     if (CHAR_DRIVER__major) {
@@ -62,8 +64,7 @@ int __init setup_device_region(dev_t *region_identifier_out,
     }
 
     if (0 != rc) {
-        printk(KERN_ALERT "Could Not Alloc char driver region with major: %d\n", CHAR_DRIVER__major);
-        PRINT_ERROR_CODE(rc);
+        LOGGER__log_error(rc, "Could Not Alloc char driver region with major: %d\n", CHAR_DRIVER__major);
         goto Exit;
     }
 

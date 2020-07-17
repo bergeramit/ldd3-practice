@@ -16,12 +16,16 @@ typedef struct CHAR_DRIVER__example_cdev {
     char stuff[10];
 };
 
-int __init setup_cdev(struct CHAR_DRIVER__example_cdev *my_cdev,
-                      struct file_operations *fops,
-                      dev_t char_device_identifier);
+int __init DEVICE_MANAGER__setup_cdev(
+    struct CHAR_DRIVER__example_cdev *my_cdev,
+    struct file_operations *fops,
+    dev_t char_device_identifier
+);
 
-int __init setup_device_region(dev_t *region_identifier_out,
-                               int first_minor,
-                               int number_of_devices);
+int __init DEVICE_MANAGER__setup_device_region(
+    dev_t *region_identifier_out,
+    int first_minor,
+    int number_of_devices
+);
 
 #endif /* DEVICE_MANAGER */
