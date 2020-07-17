@@ -64,7 +64,7 @@ int __init DEVICE_MANAGER__setup_device_region(
     }
 
     if (0 != rc) {
-        LOGGER__log_error(rc, "Could Not Alloc char driver region with major: %d\n", CHAR_DRIVER__major);
+        LOGGER__LOG_ERROR(rc, "Could Not Alloc char driver region with major: %d\n", CHAR_DRIVER__major);
         goto Exit;
     }
 

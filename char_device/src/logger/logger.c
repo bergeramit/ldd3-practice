@@ -20,24 +20,14 @@ void LOGGER__log_repetitive(const char *fmt, ...) {
     va_end(args);
 }
 
-void LOGGER__log_error(int rc, const char *fmt, ...) {
-    va_list args;
-
-	va_start(args, fmt);
-    if (printk_ratelimit()) {
-        printk(KERN_ERROR fmt, args);
-        printk(KERN_ERR "Error code: %d\n", rc);
-    }
-    va_end(args);
-}
-
 void LOGGER__log_device_numbers(dev_t identifier, int number_of_devices) {
     int i = 0, first_minor = MINOR(identifier);
     for (i = 0; i < number_of_devices; i++) {
-        LOGGER__LOG_DEBUG("Device %d, Major: %d, Minor: %d\n",
-                    i + 1,
-                    MAJOR(identifier),
-                    first_minor + i
+        LOGGER__LOG_DEBUG(
+            "Device %d, Major: %d, Minor: %d\n",
+            i + 1,
+            MAJOR(identifier),
+            first_minor + i
         );
     }
 }

@@ -32,8 +32,13 @@ static int __init char_driver__init(void) {
             char_driver__number_of_devices
          );
 
+    /*
+     * In order to test the errors - uncomment this line :)
+     * LOGGER__LOG_ERROR(rc, "Best error log eva\n");
+     */
+
     if (0 != rc) {
-        LOGGER__log_error(rc, "Could not allocate chardev region\n");
+        LOGGER__LOG_ERROR(rc, "Could not allocate chardev region\n");
         goto Exit;
     }
 
@@ -66,7 +71,7 @@ static int __init char_driver__init(void) {
          );
 
     if (rc) {
-        LOGGER__log_error(rc, "Could not add char device\n");
+        LOGGER__LOG_ERROR(rc, "Could not add char device\n");
         goto Cleanup;
     }
 
