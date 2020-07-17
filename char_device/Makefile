@@ -42,3 +42,6 @@ remove:
 
 purge: remove clean
 
+test_device_io:
+	gcc ./test/test_device_read_write.c -o ./test/test_device_read_write
+	./test/test_device_read_write /dev/$(device)0
