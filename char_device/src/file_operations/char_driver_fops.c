@@ -3,7 +3,7 @@
 #include <linux/kernel.h>
 
 #include "char_driver_fops.h"
-#include "../device_print.h"
+#include "../logger/logger_print.h"
 
 struct file_operations example_fops = {
     .owner = THIS_MODULE,
@@ -40,7 +40,7 @@ int example_open(struct inode *inode, struct file *filp) {
          * as the inode. This function get the cdev to look for, the type of the
          * struct that contains this cdev and the field name in that struct 
          * (which in this case is just cdev)
-         * Example use here: dev = container_of(inode->i_cdev, CHAR_DRIVER__example_cdev_t, cdev);
+         * Example use here: dev = container_of(inode->i_cdev, struct CHAR_DRIVER__example_cdev, cdev);
          * 
          */ 
 
@@ -49,7 +49,7 @@ int example_open(struct inode *inode, struct file *filp) {
          * for that inode
          */
         if (iminor(inode) == MINOR(my_cdev.cdev.dev)) {
-                PRINT_DEBUG("Init Successful (found cdev with minor number)\n");
+                PRINT_DEBUG("Init Successful (found cdev for the special file)\n");
 
                 /* 
                 * We will save it for easy access

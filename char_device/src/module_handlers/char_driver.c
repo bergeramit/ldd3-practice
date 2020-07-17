@@ -7,43 +7,22 @@
 #include "char_driver.h"
 #include "../file_operations/char_driver_fops.h"
 #include "../device_manager/device_manager.h"
-#include "../device_print.h"
+#include "../logger/logger_print.h"
 
 MODULE_LICENSE("Dual BSD/GPL");
 
-#define CHAR_DRIVER__MAJOR_DEFAULT (0)
-#define CHAR_DRIVER__FIRST_MINOR_DEFAULT (0)
-
-int CHAR_DRIVER__major = CHAR_DRIVER__MAJOR_DEFAULT;
-CHAR_DRIVER__example_cdev_t my_cdev = {0};
+int CHAR_DRIVER__major = DEVICE_MANAGER__MAJOR_DEFAULT;
+struct CHAR_DRIVER__example_cdev my_cdev = {0};
 
 static int char_driver__number_of_devices = 3;
-static int char_driver__first_minor = CHAR_DRIVER__FIRST_MINOR_DEFAULT;
+static int char_driver__first_minor = DEVICE_MANAGER_FIRST_MINOR_DEFAULT;
 static bool char_driver__is_driver_alive = false;
 static dev_t char_driver__region_identifier;
 
 module_param(CHAR_DRIVER__major, int, S_IRUGO);
 module_param(char_driver__first_minor, int, S_IRUGO);
 
-void print_device_numbers(void) {
-
-    /*
-     * The major number identifies the driver assossiated
-     * with that device.
-     * for example: /dev/zero and /dev/null are both managed by driver number 1
-     *              their major is 1
-     */ 
-	CHAR_DRIVER__major = MAJOR(char_driver__region_identifier);
-
-    /*
-     * The minor number tells the kernel exactly which device is being referred to
-     */
-	char_driver__first_minor = MINOR(char_driver__region_identifier);
-
-    PRINT_DEBUG("major: %d, first minor: %d\n", CHAR_DRIVER__major, char_driver__first_minor);
-}
-
-static int __init char_device_init(void) {
+static int __init char_driver_init(void) {
     int rc = 0;
     dev_t first_char_device = 0;
 
@@ -56,9 +35,26 @@ static int __init char_device_init(void) {
         goto Exit;
     }
 
-    (void)print_device_numbers();
-    first_char_device = char_driver__region_identifier + char_driver__first_minor;
+    (void)print_device_numbers(char_driver__region_identifier,
+                               char_driver__number_of_devices);
 
+     /*
+     * The major number identifies the driver assossiated
+     * with that device.
+     * for example: /dev/zero and /dev/null are both managed by driver number 1
+     *              their major is 1
+     */ 
+    CHAR_DRIVER__major = MAJOR(char_driver__region_identifier);
+
+    /*
+     * The minor number tells the kernel exactly which device is being referred to
+     */
+    char_driver__first_minor = MINOR(char_driver__region_identifier);
+
+    /*
+     * Registering the first device only
+     */ 
+    first_char_device = char_driver__region_identifier + char_driver__first_minor;
     rc = setup_cdev(&my_cdev,
                     &example_fops,
                     first_char_device);
@@ -82,7 +78,7 @@ Exit:
     return rc;
 }
 
-static void __exit char_device_exit(void) {
+static void __exit char_driver_exit(void) {
     if (char_driver__is_driver_alive) {
 
         /*
@@ -96,5 +92,5 @@ static void __exit char_device_exit(void) {
     }
 }
 
-module_init(char_device_init);
-module_exit(char_device_exit);
+module_init(char_driver_init);
+module_exit(char_driver_exit);

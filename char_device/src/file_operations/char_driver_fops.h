@@ -6,7 +6,7 @@
 #include "../module_handlers/char_driver.h"
 #include "../device_manager/device_manager.h"
 
-extern CHAR_DRIVER__example_cdev_t my_cdev;
+extern struct CHAR_DRIVER__example_cdev my_cdev;
 
 ssize_t example_write(struct file *a, const char __user *b, size_t c, loff_t *d);
 

@@ -7,7 +7,4 @@ extern struct file_operations example_fops;
 
 #define PRINT_ERROR_CODE(err) printk(KERN_ERR "Error code: %d\n", err)
 
-void print_device_numbers(void);
-
-
 #endif /* CHAR_DRIVER */

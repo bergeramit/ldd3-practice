@@ -4,11 +4,11 @@
 #include <linux/kdev_t.h>
 
 #include "device_manager.h"
-#include "../device_print.h"
+#include "../logger/logger_print.h"
 
 static __initdata char DRIVER_NAME[] = "char_device";
 
-int __init setup_cdev(CHAR_DRIVER__example_cdev_t *my_cdev,
+int __init setup_cdev(struct CHAR_DRIVER__example_cdev *my_cdev,
                       struct file_operations *fops,
                       dev_t char_device_identifier)
 {
@@ -19,7 +19,7 @@ int __init setup_cdev(CHAR_DRIVER__example_cdev_t *my_cdev,
      * cdev_alloc allocates (with something like malloc) dynamically a cdev structure
      * struct cdev *my_cdev = cdev_alloc();
      * 
-     * But we have already created cdev when we created the struct CHAR_DRIVER__example_cdev_t
+     * But we have already created cdev when we created the struct struct CHAR_DRIVER__example_cdev
      * so we just need to initialize the values with cdev_init()
      */ 
     cdev_init(&(my_cdev->cdev), fops);
