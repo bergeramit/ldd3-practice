@@ -18,7 +18,7 @@ endif
 
 module = char_device
 device = driver_dev_name
-mode = "664"
+mode = "777"
 
 all:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules

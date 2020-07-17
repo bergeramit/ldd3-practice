@@ -12,7 +12,7 @@
 MODULE_LICENSE("Dual BSD/GPL");
 
 int CHAR_DRIVER__major = DEVICE_MANAGER__MAJOR_DEFAULT;
-struct CHAR_DRIVER__example_cdev my_cdev = {0};
+struct CHAR_DRIVER__example_cdev first_cdev = {0};
 
 static int char_driver__number_of_devices = 3;
 static int char_driver__first_minor = DEVICE_MANAGER_FIRST_MINOR_DEFAULT;
@@ -65,7 +65,7 @@ static int __init char_driver__init(void) {
      */ 
     first_char_device = char_driver__region_identifier + char_driver__first_minor;
     rc = DEVICE_MANAGER__setup_cdev(
-            &my_cdev,
+            &first_cdev,
             &example_fops,
             first_char_device
          );
@@ -75,6 +75,7 @@ static int __init char_driver__init(void) {
         goto Cleanup;
     }
 
+    DEVICE_MANAGER__init_cdev(&first_cdev);
     LOGGER__LOG_DEBUG("Device Ready to use!\n");
     char_driver__is_driver_alive = true;
     goto Exit;
@@ -92,7 +93,7 @@ Exit:
 
 static void __exit char_driver__exit(void) {
     if (char_driver__is_driver_alive) {
-
+        DEVICE_MANAGER__free_cdev(&first_cdev);
         /*
          * This function unregisters the number assossiated with this driver/ module
          */
@@ -101,7 +102,7 @@ static void __exit char_driver__exit(void) {
             char_driver__number_of_devices
         );
 
-        cdev_del(&(my_cdev.cdev));
+        cdev_del(&(first_cdev.cdev));
         LOGGER__LOG_DEBUG("Freed the device region and device\n");
         char_driver__is_driver_alive = false;
     }
