@@ -4,7 +4,7 @@
 #include <linux/kdev_t.h>
 
 #include "device_manager.h"
-#include "device_print.h"
+#include "../device_print.h"
 
 static __initdata char DRIVER_NAME[] = "char_device";
 

@@ -2,7 +2,7 @@
 DEBUG = y
 
 obj-m += char_driver.o
-char_driver-objs := ./src/char_driver_fops.o ./src/char_driver.o ./src/device_manager.o
+char_driver-objs := ./src/file_operations/char_driver_fops.o ./src/module_handlers/char_driver.o ./src/device_manager/device_manager.o
 
 ifeq ($(DEBUG), y)
 	

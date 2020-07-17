@@ -3,9 +3,15 @@
 
 #include <linux/module.h>
 
-#include "char_driver.h"
+#include "../module_handlers/char_driver.h"
 
 extern int CHAR_DRIVER__major;
+
+typedef struct CHAR_DRIVER__example_cdev {
+    struct cdev cdev;
+    int id;
+    char stuff[10];
+} CHAR_DRIVER__example_cdev_t;
 
 int __init setup_cdev(CHAR_DRIVER__example_cdev_t *my_cdev,
                       struct file_operations *fops,

@@ -5,9 +5,9 @@
 #include <linux/cdev.h>
 
 #include "char_driver.h"
-#include "char_driver_fops.h"
-#include "device_manager.h"
-#include "device_print.h"
+#include "../file_operations/char_driver_fops.h"
+#include "../device_manager/device_manager.h"
+#include "../device_print.h"
 
 MODULE_LICENSE("Dual BSD/GPL");
 

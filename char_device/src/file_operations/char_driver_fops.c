@@ -3,7 +3,7 @@
 #include <linux/kernel.h>
 
 #include "char_driver_fops.h"
-#include "device_print.h"
+#include "../device_print.h"
 
 struct file_operations example_fops = {
     .owner = THIS_MODULE,
