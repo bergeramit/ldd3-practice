@@ -1,5 +1,8 @@
 import ctypes
 import logging
+import sys
+
+logging.basicConfig(level='DEBUG', format='%(levelname)s %(asctime)s - %(message)s')
 
 BASIC_TESTS_SO_PATH = "./basic_tests.so"
 
@@ -20,7 +23,7 @@ def test_device_io(device_file_path):
 
 def main():
     logging.info("Begin Running Tests")
-    test_device_io("a.txt")
+    test_device_io(sys.argv[1])
 
 if __name__ == "__main__":
     main()
