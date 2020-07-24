@@ -25,6 +25,7 @@ all:
 
 clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+	rm -rf ./test/basic_tests.so
 
 run:
 	sudo insmod char_driver.ko || exit 1
@@ -42,6 +43,11 @@ remove:
 
 purge: remove clean
 
-test_device_io:
-	gcc ./test/test_device_read_write.c -o ./test/test_device_read_write
-	./test/test_device_read_write /dev/$(device)0
+compile_basic_tests:
+	gcc -fPIC -shared -o test/basic_tests.so test/basic_tests.c
+
+test_device_io: compile_basic_tests
+	cd test/ && python3 -c "from run_tests import test_device_io; test_device_io('/dev/$(device)0')"
+
+run_all_tests: compile_basic_tests
+	python3 ./test/run_tests.py /dev/$(device)0

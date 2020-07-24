@@ -1,18 +1,20 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
+#include <stdbool.h>
 
 const char test_message[] = "Hi There Man";
 
-int main(int argc, char *argv[]) {
+bool test_io(char *file_path) {
     char read_buf[100] = {0};
-    FILE *fp = fopen(argv[1], "wb");
+    FILE *fp = fopen(file_path, "wb");
     fflush(stdin);
 
     write(fileno(fp), "Hi There Man", sizeof(test_message));
     printf("Written: %s\n", test_message);
     fclose(fp);
 
-    fp = fopen(argv[1], "rb");
+    fp = fopen(file_path, "rb");
     /*
      * fread(read_buf, 3, 1, fp); --> will not read 3 bytes!
      * 
@@ -25,4 +27,10 @@ int main(int argc, char *argv[]) {
 
     printf("The read data is: %s\n", read_buf);
     fclose(fp);
+
+    if (memcmp(test_message, read_buf, sizeof(test_message)) == 0) {
+        return true;
+    }
+
+    return false;
 }
