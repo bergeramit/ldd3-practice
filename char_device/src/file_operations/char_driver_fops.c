@@ -2,10 +2,25 @@
 #include <linux/fs.h>
 #include <linux/kernel.h>
 #include <linux/uaccess.h>
+#include <linux/ioctl.h>
 
 #include "char_driver_fops.h"
 #include "../logger/logger.h"
 #include "../device_manager/device_manager.h"
+
+#define CHAR_DRIVER_IOCTL_MAGIC 'B'
+
+/*
+ * The first param is the magic we define that lets the entire system know
+ * where to direct the ioctl command with this magic (here :)).
+ * The second param is for internal use to let use couple types or operations
+ * with an internal number (usually a sequence number like here).
+ * Last param is the datatype used by the user to call ioctl. can be anything
+ *
+ */
+#define CHAR_DEVICE_IOCTL_RESET _IO(CHAR_DRIVER_IOCTL_MAGIC, 0)
+#define CHAR_DEVICE_IOCTL_SPECIAL_READ _IOR(CHAR_DRIVER_IOCTL_MAGIC, 1, int)
+#define CHAR_DEVICE_IOCTL_SPECIAL_WRITE _IOW(CHAR_DRIVER_IOCTL_MAGIC, 2, int)
 
 struct file_operations example_fops = {
     .owner = THIS_MODULE,
@@ -137,5 +152,20 @@ int example_release(struct inode *inode, struct file *filp) {
 
 long example_ioctl(struct file *f, unsigned int cmd, unsigned long arg) {
     LOGGER__LOG_DEBUG("ioctl syscall called\n");
+
+    switch (cmd) {
+        case CHAR_DEVICE_IOCTL_RESET:
+            LOGGER__LOG_DEBUG("Request for Reset call\n");
+            break;
+        case CHAR_DEVICE_IOCTL_RESET:
+            LOGGER__LOG_DEBUG("Request for Reset call\n");
+            break;
+        case CHAR_DEVICE_IOCTL_SPECIAL_READ:
+            LOGGER__LOG_DEBUG("Request for special read call\n");
+            break;
+        case CHAR_DEVICE_IOCTL_SPECIAL_WRITE:
+            LOGGER__LOG_DEBUG("Request for special write call\n");
+            break;
+    }
     return 0;
 }
