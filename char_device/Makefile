@@ -43,11 +43,11 @@ remove:
 
 purge: remove clean
 
-compile_basic_tests:
+basic_tests:
 	gcc -fPIC -shared -o test/basic_tests.so test/basic_tests.c
 
-test_device_io: compile_basic_tests
+test_device_io: basic_tests
 	cd test/ && python3 -c "from run_tests import test_device_io; test_device_io('/dev/$(device)0')"
 
-run_all_tests: compile_basic_tests
+run_all_tests: basic_tests
 	python3 ./test/run_tests.py /dev/$(device)0
