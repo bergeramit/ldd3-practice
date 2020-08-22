@@ -11,7 +11,7 @@
 MODULE_LICENSE("Dual BSD/GPL");
 
 int CHAR_DRIVER__major = DEVICE_MANAGER__MAJOR_DEFAULT;
-struct CHAR_DRIVER__example_cdev first_cdev = {0};
+struct DEVICE_MANAGER__example_cdev first_cdev = {0};
 
 static int char_driver__number_of_devices = 1;
 static int char_driver__first_minor = DEVICE_MANAGER_FIRST_MINOR_DEFAULT;

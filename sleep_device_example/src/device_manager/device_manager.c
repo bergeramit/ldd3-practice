@@ -10,7 +10,7 @@
 static __initdata char DRIVER_NAME[] = "sleep_device";
 
 int __init DEVICE_MANAGER__setup_cdev(
-    struct CHAR_DRIVER__example_cdev *first_cdev,
+    struct DEVICE_MANAGER__example_cdev *first_cdev,
     struct file_operations *fops,
     dev_t char_device_identifier
 ){
@@ -21,7 +21,7 @@ int __init DEVICE_MANAGER__setup_cdev(
      * cdev_alloc allocates (with something like malloc) dynamically a cdev structure
      * struct cdev *first_cdev = cdev_alloc();
      * 
-     * But we have already created cdev when we created the struct struct CHAR_DRIVER__example_cdev
+     * But we have already created cdev when we created the struct struct DEVICE_MANAGER__example_cdev
      * so we just need to initialize the values with cdev_init()
      */ 
     cdev_init(&(first_cdev->cdev), fops);
@@ -75,7 +75,7 @@ Exit:
     return rc;
 }
 
-int DEVICE_MANAGER__init_cdev(struct  CHAR_DRIVER__example_cdev *cdev) {
+int DEVICE_MANAGER__init_cdev(struct  DEVICE_MANAGER__example_cdev *cdev) {
     int rc = 0, i;
     if (NULL != cdev->stuff) {
         rc = 0;
@@ -104,7 +104,7 @@ Exit:
     return rc;
 }
 
-void DEVICE_MANAGER__free_cdev(struct CHAR_DRIVER__example_cdev *cdev) {
+void DEVICE_MANAGER__free_cdev(struct DEVICE_MANAGER__example_cdev *cdev) {
     if (cdev->stuff != NULL) {
         kfree(cdev->stuff);
         cdev->stuff = NULL;

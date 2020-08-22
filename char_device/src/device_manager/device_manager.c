@@ -3,6 +3,8 @@
 #include <linux/fs.h>
 #include <linux/kdev_t.h>
 #include <linux/slab.h>
+#include <linux/wait.h>
+#include <linux/semaphore.h>
 
 #include "device_manager.h"
 #include "../logger/logger.h"
@@ -10,7 +12,7 @@
 static __initdata char DRIVER_NAME[] = "char_device";
 
 int __init DEVICE_MANAGER__setup_cdev(
-    struct CHAR_DRIVER__example_cdev *first_cdev,
+    struct DEVICE_MANAGER__example_cdev *first_cdev,
     struct file_operations *fops,
     dev_t char_device_identifier
 ){
@@ -21,7 +23,7 @@ int __init DEVICE_MANAGER__setup_cdev(
      * cdev_alloc allocates (with something like malloc) dynamically a cdev structure
      * struct cdev *first_cdev = cdev_alloc();
      * 
-     * But we have already created cdev when we created the struct struct CHAR_DRIVER__example_cdev
+     * But we have already created cdev when we created the struct struct DEVICE_MANAGER__example_cdev
      * so we just need to initialize the values with cdev_init()
      */ 
     cdev_init(&(first_cdev->cdev), fops);
@@ -75,7 +77,7 @@ Exit:
     return rc;
 }
 
-int DEVICE_MANAGER__init_cdev(struct  CHAR_DRIVER__example_cdev *cdev) {
+int DEVICE_MANAGER__init_cdev(struct  DEVICE_MANAGER__example_cdev *cdev) {
     int rc = 0, i;
     if (NULL != cdev->stuff) {
         rc = 0;
@@ -98,13 +100,17 @@ int DEVICE_MANAGER__init_cdev(struct  CHAR_DRIVER__example_cdev *cdev) {
     for (i = 0; i < DEVICE_MANAGER_OUTPUT_SIZE; i++) {
         *(cdev->stuff + i) = 0;
     }
+
+    sema_init(&(cdev->sem), 1);
+    init_waitqueue_head(&(cdev->write_wait_q));
+    init_waitqueue_head(&(cdev->read_wait_q));
     rc = 0;
 
 Exit:
     return rc;
 }
 
-void DEVICE_MANAGER__free_cdev(struct CHAR_DRIVER__example_cdev *cdev) {
+void DEVICE_MANAGER__free_cdev(struct DEVICE_MANAGER__example_cdev *cdev) {
     if (cdev->stuff != NULL) {
         kfree(cdev->stuff);
         cdev->stuff = NULL;

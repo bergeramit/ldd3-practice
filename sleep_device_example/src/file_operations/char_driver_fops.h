@@ -6,7 +6,7 @@
 #include "../module_handlers/char_driver.h"
 #include "../device_manager/device_manager.h"
 
-extern struct CHAR_DRIVER__example_cdev first_cdev;
+extern struct DEVICE_MANAGER__example_cdev first_cdev;
 
 ssize_t sleep_write(struct file *filp, const char __user *b, size_t c, loff_t *d);
 

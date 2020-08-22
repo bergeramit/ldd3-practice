@@ -15,7 +15,7 @@ struct file_operations example_fops = {
     .owner = THIS_MODULE,
     .read = sleep_read,
     .write = sleep_write,
-    .open = example_open
+    .open = example_open,
 };
 
 ssize_t sleep_write(
@@ -26,6 +26,10 @@ ssize_t sleep_write(
 ){
     printk(KERN_DEBUG "process %i (%s) wake everyone up...\n", current->pid, current->comm);
     flag = 1;
+
+    /*
+     * You must call wake up after the predicate was satisfied
+     */
     wake_up_interruptible(&sleep_q);
     return count; /* success to avoid retry */
 }

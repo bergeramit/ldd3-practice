@@ -3,6 +3,8 @@
 #include <linux/kernel.h>
 #include <linux/uaccess.h>
 #include <linux/ioctl.h>
+#include <linux/wait.h>
+#include <linux/poll.h>
 
 #include "char_driver_fops.h"
 #include "../logger/logger.h"
@@ -29,7 +31,25 @@ struct file_operations example_fops = {
     .open = example_open,
     .release = example_release,
     .unlocked_ioctl = example_ioctl,
+    .poll = example_poll
 };
+
+unsigned int example_poll(struct file *filp, poll_table *wait) {
+    struct DEVICE_MANAGER__example_cdev *cdev = filp->private_data;
+    unsigned mask = 0;
+
+    down(&(cdev->sem));
+    poll_wait(filp, &(cdev->read_wait_q), wait);
+    poll_wait(filp, &(cdev->write_wait_q), wait);
+    if (cdev->write_pos > cdev->read_pos) {
+        mask |= POLLIN | POLLRDNORM; /* Readable */
+    } else {
+        mask |= POLLOUT | POLLWRNORM; /* Writable */
+    }
+
+    up(&(cdev->sem));
+    return mask;
+}
 
 ssize_t example_write(
     struct file *filp,
@@ -39,7 +59,7 @@ ssize_t example_write(
 ){
     int rc = 0;
     unsigned long still_to_copy = 0;
-    struct CHAR_DRIVER__example_cdev *cdev = filp->private_data;
+    struct DEVICE_MANAGER__example_cdev *cdev = filp->private_data;
     LOGGER__LOG_DEBUG("write syscall called\n");
     if (cdev->allocated_size < cdev->write_pos + count) {
         rc = -1;
@@ -59,6 +79,11 @@ ssize_t example_write(
         goto Exit;
     }
     cdev->write_pos += count;
+
+    /* 
+     * Wrote new data, can read it now
+     */
+    wake_up_interruptible(&(cdev->read_wait_q));
     rc = count;
 
 Exit:
@@ -73,7 +98,7 @@ ssize_t example_read(
 ){
     int rc = 0;
     unsigned long still_to_copy = 0;
-    struct CHAR_DRIVER__example_cdev *cdev = filp->private_data;
+    struct DEVICE_MANAGER__example_cdev *cdev = filp->private_data;
 
     if (cdev->allocated_size < cdev->read_pos + count) {
         rc = -1;
@@ -90,10 +115,15 @@ ssize_t example_read(
     still_to_copy = copy_to_user(usr_buf, cdev->stuff + cdev->read_pos, count);
     if (0 != still_to_copy) {
         rc = -EFAULT;
-        LOGGER__LOG_ERROR(rc, "Couldnt write to user buffer\n");
+        LOGGER__LOG_ERROR(rc, "Couldnt read to user buffer\n");
         goto Exit;
     }
     cdev->read_pos += count;
+
+    /*
+     * Freed up space with read, you can write more now
+     */
+    wake_up_interruptible(&(cdev->write_wait_q));
     rc = count;
 
 Exit:
@@ -116,7 +146,7 @@ int example_open(struct inode *inode, struct file *filp) {
      * as the inode. This function get the cdev to look for, the type of the
      * struct that contains this cdev and the field name in that struct 
      * (which in this case is just cdev)
-     * Example use here: dev = container_of(inode->i_cdev, struct CHAR_DRIVER__example_cdev, cdev);
+     * Example use here: dev = container_of(inode->i_cdev, struct DEVICE_MANAGER__example_cdev, cdev);
      * 
      */ 
 
@@ -154,9 +184,6 @@ long example_ioctl(struct file *f, unsigned int cmd, unsigned long arg) {
     LOGGER__LOG_DEBUG("ioctl syscall called\n");
 
     switch (cmd) {
-        case CHAR_DEVICE_IOCTL_RESET:
-            LOGGER__LOG_DEBUG("Request for Reset call\n");
-            break;
         case CHAR_DEVICE_IOCTL_RESET:
             LOGGER__LOG_DEBUG("Request for Reset call\n");
             break;
