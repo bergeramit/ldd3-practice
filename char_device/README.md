@@ -1,6 +1,6 @@
 # Basic Instructions
 
-make && make register && make run
+make && make run && make register
 
 ## The special driver devices
 

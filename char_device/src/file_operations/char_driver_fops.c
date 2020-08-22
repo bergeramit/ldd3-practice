@@ -39,6 +39,16 @@ unsigned int example_poll(struct file *filp, poll_table *wait) {
     unsigned mask = 0;
 
     down(&(cdev->sem));
+
+    /*
+     * poll_wait does not sleep!!
+     * when we call poll_wait we inseting the wanted q to the wait q
+     * then if we return 0 (meaning mask ==0) then we will *sleep*
+     * so long as the mask will be zero we continue sleeping untill our q will wake
+     * and we can set the mask to none zero so that we can return from the select.
+     *
+     * After poll wait, we iterate over the whole poll table to see if some q is ready
+     */
     poll_wait(filp, &(cdev->read_wait_q), wait);
     poll_wait(filp, &(cdev->write_wait_q), wait);
     if (cdev->write_pos > cdev->read_pos) {

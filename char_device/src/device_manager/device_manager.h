@@ -10,7 +10,7 @@ extern int CHAR_DRIVER__major;
 
 #define DEVICE_MANAGER__MAJOR_DEFAULT (0)
 #define DEVICE_MANAGER_FIRST_MINOR_DEFAULT (0)
-#define DEVICE_MANAGER_OUTPUT_SIZE (100)
+#define DEVICE_MANAGER_OUTPUT_SIZE (5000)
 
 struct DEVICE_MANAGER__example_cdev {
     struct cdev cdev;
