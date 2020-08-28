@@ -161,6 +161,8 @@ int example_open(struct inode *inode, struct file *filp) {
      */
      kuid_t user_uid = current_uid();
      kuid_t user_euid = current_euid();
+
+    LOGGER__LOG_DEBUG("User %ld trying to open device\n", (long int)user_uid.val);
     spin_lock(&(DEVICE_MANAGER__access_control_g.lock_access));
     if (DEVICE_MANAGER__access_control_g.currently_using_count /* if some user already opened the device - restrict for him only */
         && (DEVICE_MANAGER__access_control_g.owner != user_uid.val) /* check if we are the same user to allow access */
@@ -168,6 +170,7 @@ int example_open(struct inode *inode, struct file *filp) {
         && (!(capable(CAP_DAC_OVERRIDE)))) { /* still allow root */
 
             spin_unlock(&(DEVICE_MANAGER__access_control_g.lock_access));
+            LOGGER__LOG_DEBUG("Device already in use!\n");
             return -EBUSY;
         } 
     
@@ -178,7 +181,7 @@ int example_open(struct inode *inode, struct file *filp) {
     DEVICE_MANAGER__access_control_g.currently_using_count++;
     spin_unlock(&(DEVICE_MANAGER__access_control_g.lock_access));
 
-    LOGGER__LOG_DEBUG("open syscall called\n");
+    LOGGER__LOG_DEBUG("openned successfully\n");
     
     /*
      * container_of function finds the struct that contains the same cdev
