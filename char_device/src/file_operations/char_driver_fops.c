@@ -15,7 +15,7 @@
 #include "../logger/logger.h"
 #include "../device_manager/device_manager.h"
 
-#define CHAR_DRIVER_IOCTL_MAGIC 'B'
+#define MODULE_HANDLER_IOCTL_MAGIC 'B'
 
 /*
  * The first param is the magic we define that lets the entire system know
@@ -25,14 +25,14 @@
  * Last param is the datatype used by the user to call ioctl. can be anything
  *
  */
-#define CHAR_DEVICE_IOCTL_RESET _IO(CHAR_DRIVER_IOCTL_MAGIC, 0)
-#define CHAR_DEVICE_IOCTL_SPECIAL_READ _IOR(CHAR_DRIVER_IOCTL_MAGIC, 1, int)
-#define CHAR_DEVICE_IOCTL_SPECIAL_WRITE _IOW(CHAR_DRIVER_IOCTL_MAGIC, 2, int)
+#define CHAR_DEVICE_IOCTL_RESET _IO(MODULE_HANDLER_IOCTL_MAGIC, 0)
+#define CHAR_DEVICE_IOCTL_SPECIAL_READ _IOR(MODULE_HANDLER_IOCTL_MAGIC, 1, int)
+#define CHAR_DEVICE_IOCTL_SPECIAL_WRITE _IOW(MODULE_HANDLER_IOCTL_MAGIC, 2, int)
 
 struct file_operations example_fops = {
     .owner = THIS_MODULE,
     .read = example_read,
-    .write = example_write,
+    .write = sleep_write,
     .open = example_open,
     .release = example_release,
     .unlocked_ioctl = example_ioctl,
@@ -66,7 +66,7 @@ unsigned int example_poll(struct file *filp, poll_table *wait) {
     return mask;
 }
 
-ssize_t example_write(
+ssize_t sleep_write(
     struct file *filp,
     const char __user *usr_buf,
     size_t count,

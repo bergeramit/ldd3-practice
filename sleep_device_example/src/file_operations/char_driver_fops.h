@@ -3,7 +3,7 @@
 
 #include <linux/version.h>
 
-#include "../module_handlers/char_driver.h"
+#include "../module_handlers/module_handler.h"
 #include "../device_manager/device_manager.h"
 
 extern struct DEVICE_MANAGER__example_cdev DEVICE_MANAGER__cdev_g;

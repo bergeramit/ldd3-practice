@@ -7,9 +7,9 @@
 #include <linux/spinlock_types.h>
 #include <linux/types.h>
 
-#include "../module_handlers/char_driver.h"
+#include "../module_handlers/module_handler.h"
 
-extern int CHAR_DRIVER__major;
+extern int MODULE_HANDLER__major_g;
 
 #define DEVICE_MANAGER__MAJOR_DEFAULT (0)
 #define DEVICE_MANAGER_FIRST_MINOR_DEFAULT (0)

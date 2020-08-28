@@ -7,7 +7,7 @@
 #include "device_manager.h"
 #include "../logger/logger.h"
 
-static __initdata char DRIVER_NAME[] = "sleep_device";
+static __initdata char DRIVER_NAME[] = "device_driver_name";
 
 int __init DEVICE_MANAGER__setup_cdev(
     struct DEVICE_MANAGER__example_cdev *example_cdev,
@@ -46,9 +46,9 @@ int __init DEVICE_MANAGER__setup_device_region(
 ){
     int rc = -1;
     dev_t identifier;
-    if (CHAR_DRIVER__major) {
+    if (MODULE_HANDLER__major_g) {
 
-        identifier = MKDEV(CHAR_DRIVER__major, first_minor);
+        identifier = MKDEV(MODULE_HANDLER__major_g, first_minor);
         rc = register_chrdev_region(identifier, number_of_devices, DRIVER_NAME);
     } else {
 
@@ -65,7 +65,7 @@ int __init DEVICE_MANAGER__setup_device_region(
     }
 
     if (0 != rc) {
-        LOGGER__LOG_ERROR(rc, "Could Not Alloc char driver region with major: %d\n", CHAR_DRIVER__major);
+        LOGGER__LOG_ERROR(rc, "Could Not Alloc char driver region with major: %d\n", MODULE_HANDLER__major_g);
         goto Exit;
     }
 

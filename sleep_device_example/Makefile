@@ -3,7 +3,7 @@ DEBUG = y
 
 obj-m += sleep_driver.o
 sleep_driver-objs := src/file_operations/char_driver_fops.o \
-					src/module_handlers/char_driver.o \
+					src/module_handlers/module_handler.o \
 					src/device_manager/device_manager.o \
 					src/logger/logger.o
 
