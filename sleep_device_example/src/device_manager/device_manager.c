@@ -7,7 +7,7 @@
 #include "device_manager.h"
 #include "../logger/logger.h"
 
-static __initdata char DRIVER_NAME[] = "sleep_device";
+static __initdata char DEVICE_MANAGER__DRIVER_NAME_g[] = "sleep_device";
 
 int __init DEVICE_MANAGER__setup_cdev(
     struct DEVICE_MANAGER__example_cdev *example_cdev,
@@ -49,7 +49,7 @@ int __init DEVICE_MANAGER__setup_device_region(
     if (MODULE_HANDLER__major_g) {
 
         identifier = MKDEV(MODULE_HANDLER__major_g, first_minor);
-        rc = register_chrdev_region(identifier, number_of_devices, DRIVER_NAME);
+        rc = register_chrdev_region(identifier, number_of_devices, DEVICE_MANAGER__DRIVER_NAME_g);
     } else {
 
         /*
@@ -61,7 +61,7 @@ int __init DEVICE_MANAGER__setup_device_region(
         * DEVICE_NAME - the name of the driver (will appear in /proc/devices and will be assossiated with
         *               the major number)
         */
-        rc = alloc_chrdev_region(&identifier, 0, number_of_devices, DRIVER_NAME);
+        rc = alloc_chrdev_region(&identifier, 0, number_of_devices, DEVICE_MANAGER__DRIVER_NAME_g);
     }
 
     if (0 != rc) {

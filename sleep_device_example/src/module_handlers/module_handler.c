@@ -13,19 +13,19 @@ MODULE_LICENSE("Dual BSD/GPL");
 int MODULE_HANDLER__major_g = DEVICE_MANAGER__MAJOR_DEFAULT;
 struct DEVICE_MANAGER__example_cdev DEVICE_MANAGER__cdev_g = {0};
 
-static int module_handler__number_of_devices = 1;
-static int module_handler__first_minor = DEVICE_MANAGER_FIRST_MINOR_DEFAULT;
-static bool module_handler__is_driver_alive = false;
-static dev_t module_handler__region_identifier;
+static int module_handler__number_of_devices_g = 1;
+static int module_handler__first_minor_g = DEVICE_MANAGER_FIRST_MINOR_DEFAULT;
+static bool module_handler__is_driver_alive_g = false;
+static dev_t module_handler__region_identifier_g;
 
 static int __init module_handler__init(void) {
     int rc = 0;
     dev_t first_char_device = 0;
 
     rc = DEVICE_MANAGER__setup_device_region(
-            &module_handler__region_identifier,
-            module_handler__first_minor,
-            module_handler__number_of_devices
+            &module_handler__region_identifier_g,
+            module_handler__first_minor_g,
+            module_handler__number_of_devices_g
          );
 
     /*
@@ -39,8 +39,8 @@ static int __init module_handler__init(void) {
     }
 
     LOGGER__log_device_numbers(
-        module_handler__region_identifier,
-        module_handler__number_of_devices
+        module_handler__region_identifier_g,
+        module_handler__number_of_devices_g
     );
 
      /*
@@ -49,17 +49,17 @@ static int __init module_handler__init(void) {
      * for example: /dev/zero and /dev/null are both managed by driver number 1
      *              their major is 1
      */ 
-    MODULE_HANDLER__major_g = MAJOR(module_handler__region_identifier);
+    MODULE_HANDLER__major_g = MAJOR(module_handler__region_identifier_g);
 
     /*
      * The minor number tells the kernel exactly which device is being referred to
      */
-    module_handler__first_minor = MINOR(module_handler__region_identifier);
+    module_handler__first_minor_g = MINOR(module_handler__region_identifier_g);
 
     /*
      * Registering the first device only
      */ 
-    first_char_device = module_handler__region_identifier + module_handler__first_minor;
+    first_char_device = module_handler__region_identifier_g + module_handler__first_minor_g;
     rc = DEVICE_MANAGER__setup_cdev(
             &DEVICE_MANAGER__cdev_g,
             &example_fops,
@@ -73,13 +73,13 @@ static int __init module_handler__init(void) {
 
     DEVICE_MANAGER__init_cdev(&DEVICE_MANAGER__cdev_g);
     LOGGER__LOG_DEBUG("Device Ready to use!\n");
-    module_handler__is_driver_alive = true;
+    module_handler__is_driver_alive_g = true;
     goto Exit;
 
 Cleanup:
     unregister_chrdev_region(
-        module_handler__region_identifier,
-        module_handler__number_of_devices
+        module_handler__region_identifier_g,
+        module_handler__number_of_devices_g
     );
     LOGGER__LOG_DEBUG("Freed the device numbers\n");
 
@@ -88,19 +88,19 @@ Exit:
 }
 
 static void __exit module_handler__exit(void) {
-    if (module_handler__is_driver_alive) {
+    if (module_handler__is_driver_alive_g) {
         DEVICE_MANAGER__free_cdev(&DEVICE_MANAGER__cdev_g);
         /*
          * This function unregisters the number assossiated with this driver/ module
          */
         unregister_chrdev_region(
-            module_handler__region_identifier,
-            module_handler__number_of_devices
+            module_handler__region_identifier_g,
+            module_handler__number_of_devices_g
         );
 
         cdev_del(&(DEVICE_MANAGER__cdev_g.cdev));
         LOGGER__LOG_DEBUG("Freed the device region and device\n");
-        module_handler__is_driver_alive = false;
+        module_handler__is_driver_alive_g = false;
     }
 }
 
