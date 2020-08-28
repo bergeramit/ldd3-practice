@@ -3,6 +3,9 @@
 
 #include <linux/module.h>
 #include <linux/semaphore.h>
+#include <linux/spinlock.h>
+#include <linux/spinlock_types.h>
+#include <linux/types.h>
 
 #include "../module_handlers/char_driver.h"
 
@@ -24,8 +27,14 @@ struct DEVICE_MANAGER__example_cdev {
     wait_queue_head_t write_wait_q;
 };
 
+struct DEVICE_MANAGER__access_control {
+    struct spinlock lock_access;
+    int currently_using_count;
+    uid_t owner;
+};
+
 int __init DEVICE_MANAGER__setup_cdev(
-    struct DEVICE_MANAGER__example_cdev *first_cdev,
+    struct DEVICE_MANAGER__example_cdev *example_cdev,
     struct file_operations *fops,
     dev_t char_device_identifier
 );
@@ -39,5 +48,7 @@ int __init DEVICE_MANAGER__setup_device_region(
 int DEVICE_MANAGER__init_cdev(struct  DEVICE_MANAGER__example_cdev *cdev);
 
 void DEVICE_MANAGER__free_cdev(struct  DEVICE_MANAGER__example_cdev *cdev);
+
+void DEVICE_MANAGER__init_access_control(struct DEVICE_MANAGER__access_control *acc);
 
 #endif /* DEVICE_MANAGER */

@@ -5,6 +5,9 @@
 #include <linux/slab.h>
 #include <linux/wait.h>
 #include <linux/semaphore.h>
+#include <linux/spinlock.h>
+#include <linux/spinlock_types.h>
+
 
 #include "device_manager.h"
 #include "../logger/logger.h"
@@ -12,7 +15,7 @@
 static __initdata char DRIVER_NAME[] = "char_device";
 
 int __init DEVICE_MANAGER__setup_cdev(
-    struct DEVICE_MANAGER__example_cdev *first_cdev,
+    struct DEVICE_MANAGER__example_cdev *example_cdev,
     struct file_operations *fops,
     dev_t char_device_identifier
 ){
@@ -21,22 +24,22 @@ int __init DEVICE_MANAGER__setup_cdev(
      * This cdev - charecter device is the structure responsible
      * for a specific charecter device i.e dev_t (a single major and minor == one file in /dev).
      * cdev_alloc allocates (with something like malloc) dynamically a cdev structure
-     * struct cdev *first_cdev = cdev_alloc();
+     * struct cdev *example_cdev = cdev_alloc();
      * 
      * But we have already created cdev when we created the struct struct DEVICE_MANAGER__example_cdev
      * so we just need to initialize the values with cdev_init()
      */ 
-    cdev_init(&(first_cdev->cdev), fops);
+    cdev_init(&(example_cdev->cdev), fops);
     
-    first_cdev->cdev.ops = fops;
-    first_cdev->cdev.owner = THIS_MODULE;
+    example_cdev->cdev.ops = fops;
+    example_cdev->cdev.owner = THIS_MODULE;
 
     /*
      * Making sure the kernel knows which cdev is responsible to handle the charecter device
      * This function makes the connection between the device id (major and minor numbers) 
      * and the char device structure that handles this device (including file operations on this specific file)
      */
-    rc = cdev_add(&(first_cdev->cdev), char_device_identifier, 1);
+    rc = cdev_add(&(example_cdev->cdev), char_device_identifier, 1);
 
     return rc;
 }
@@ -115,4 +118,10 @@ void DEVICE_MANAGER__free_cdev(struct DEVICE_MANAGER__example_cdev *cdev) {
         kfree(cdev->stuff);
         cdev->stuff = NULL;
     }
+}
+
+void DEVICE_MANAGER__init_access_control(struct DEVICE_MANAGER__access_control *acc) {
+    spin_lock_init(&(acc->lock_access));
+    acc->currently_using_count = 0;
+    acc->owner = 0;
 }

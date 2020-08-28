@@ -21,7 +21,7 @@ struct DEVICE_MANAGER__example_cdev {
 };
 
 int __init DEVICE_MANAGER__setup_cdev(
-    struct DEVICE_MANAGER__example_cdev *first_cdev,
+    struct DEVICE_MANAGER__example_cdev *example_cdev,
     struct file_operations *fops,
     dev_t char_device_identifier
 );

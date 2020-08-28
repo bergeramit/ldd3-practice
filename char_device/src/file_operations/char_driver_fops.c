@@ -5,6 +5,11 @@
 #include <linux/ioctl.h>
 #include <linux/wait.h>
 #include <linux/poll.h>
+#include <linux/sched.h>
+#include <linux/spinlock.h>
+#include <linux/spinlock_types.h>
+#include <linux/cred.h>
+#include <linux/uidgid.h>
 
 #include "char_driver_fops.h"
 #include "../logger/logger.h"
@@ -149,6 +154,30 @@ Exit:
  * 
  */
 int example_open(struct inode *inode, struct file *filp) {
+
+    /*
+     * Restricting access to single user at a time
+     * using capable to check for a super user capability
+     */
+     kuid_t user_uid = current_uid();
+     kuid_t user_euid = current_euid();
+    spin_lock(&(DEVICE_MANAGER__access_control_g.lock_access));
+    if (DEVICE_MANAGER__access_control_g.currently_using_count /* if some user already opened the device - restrict for him only */
+        && (DEVICE_MANAGER__access_control_g.owner != user_uid.val) /* check if we are the same user to allow access */
+        && (DEVICE_MANAGER__access_control_g.owner != user_euid.val) /* check whoever did su */
+        && (!(capable(CAP_DAC_OVERRIDE)))) { /* still allow root */
+
+            spin_unlock(&(DEVICE_MANAGER__access_control_g.lock_access));
+            return -EBUSY;
+        } 
+    
+    if (DEVICE_MANAGER__access_control_g.currently_using_count == 0) {
+        DEVICE_MANAGER__access_control_g.owner = user_uid.val;
+    }
+
+    DEVICE_MANAGER__access_control_g.currently_using_count++;
+    spin_unlock(&(DEVICE_MANAGER__access_control_g.lock_access));
+
     LOGGER__LOG_DEBUG("open syscall called\n");
     
     /*
@@ -164,13 +193,13 @@ int example_open(struct inode *inode, struct file *filp) {
      * This technique uses the minor number to detect which cdev struct is responsible
      * for that inode
      */
-    if (iminor(inode) == MINOR(first_cdev.cdev.dev)) {
+    if (iminor(inode) == MINOR(DEVICE_MANAGER__cdev_g.cdev.dev)) {
         LOGGER__LOG_DEBUG("Init Successful (found cdev for the special file)\n");
         
         /* 
         * We will save it for easy access
         */ 
-        filp->private_data = &first_cdev;
+        filp->private_data = &DEVICE_MANAGER__cdev_g;
     }
 
     return 0;
@@ -186,6 +215,11 @@ int example_open(struct inode *inode, struct file *filp) {
  * for us
  */
 int example_release(struct inode *inode, struct file *filp) {
+
+    spin_lock(&(DEVICE_MANAGER__access_control_g.lock_access));
+    DEVICE_MANAGER__access_control_g.currently_using_count--;
+    spin_unlock(&(DEVICE_MANAGER__access_control_g.lock_access));
+
     LOGGER__LOG_DEBUG("release syscall called\n");
     return 0;
 }

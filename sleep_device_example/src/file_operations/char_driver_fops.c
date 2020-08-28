@@ -66,13 +66,13 @@ int example_open(struct inode *inode, struct file *filp) {
      * This technique uses the minor number to detect which cdev struct is responsible
      * for that inode
      */
-    if (iminor(inode) == MINOR(first_cdev.cdev.dev)) {
+    if (iminor(inode) == MINOR(example_cdev.cdev.dev)) {
         LOGGER__LOG_DEBUG("Init Successful (found cdev for the special file)\n");
 
         /* 
         * We will save it for easy access
         */ 
-        filp->private_data = &first_cdev;
+        filp->private_data = &example_cdev;
     }
     return 0;
 }
