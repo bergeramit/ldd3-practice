@@ -27,4 +27,8 @@ int example_open(struct inode *inode, struct file *filp);
 
 void handle_timeout(struct timer_list *my_timer);
 
+int example_release(struct inode *inode, struct file *filp);
+
+void handle_tasklet(unsigned long int data);
+
 #endif /* CHAR_FOPS */
