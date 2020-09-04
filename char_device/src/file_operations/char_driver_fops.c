@@ -32,7 +32,7 @@
 struct file_operations example_fops = {
     .owner = THIS_MODULE,
     .read = example_read,
-    .write = sleep_write,
+    .write = example_write,
     .open = example_open,
     .release = example_release,
     .unlocked_ioctl = example_ioctl,
@@ -66,7 +66,7 @@ unsigned int example_poll(struct file *filp, poll_table *wait) {
     return mask;
 }
 
-ssize_t sleep_write(
+ssize_t example_write(
     struct file *filp,
     const char __user *usr_buf,
     size_t count,
